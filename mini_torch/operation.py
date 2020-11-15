@@ -102,7 +102,7 @@ def matmul_(tensor1, tensor2):
                                     grad_func_ts2)
 
 def neg_(tensor1):
-    values = tensor1.values
+    values = -tensor1.values
 
     def grad_func_ts1(grad):
         return -grad 
@@ -160,6 +160,20 @@ def sum_(tensor1, axis=None):
         else:
             grad = grad * np.ones_like(tensor1.values)
         return grad 
+    
+    return create_unary_op_tensor(values, tensor1, grad_func_ts1)
+
+def clip_(tensor1, low, high):
+    values = tensor1.values.clip(low, high)
+
+    mask = np.ones(tensor1.shape, dtype=bool)
+    if low is not None:
+        mask &= (tensor1.values >= low)
+    if high is not None:
+        mask &= (tensor1.values <= high)
+
+    def grad_func_ts1(grad):
+        return grad * mask 
     
     return create_unary_op_tensor(values, tensor1, grad_func_ts1)
         
