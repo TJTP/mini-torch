@@ -14,8 +14,11 @@ def main():
     parser.add_argument("--output_dir", default="./data/", type=str, 
                         help="Output dir.")
     parser.add_argument("--ratio", default=0.8, type=float,
-                        help="Division ratio")
+                        help="Division ratio of train and test data")
+    parser.add_argument("--fine_tune", action="store_true",
+                        help="Generate data for fine-tuning")
     args = parser.parse_args()
+    
     examples = []
     for _ in range(args.num):
         example = []
@@ -28,13 +31,17 @@ def main():
     #print(examples)
     random.shuffle(examples)
     #print(examples)
-    num_train = int(args.ratio * len(examples))
-    train_dataset = examples[:num_train]
-    test_dataset = examples[num_train:]
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)
-    np.savetxt(args.output_dir + "train.csv", train_dataset, fmt="%f", delimiter=',')
-    np.savetxt(args.output_dir +"test.csv", test_dataset, fmt="%f", delimiter=',')
+    
+    if args.fine_tune:
+        np.savetxt(args.output_dir + "fine_tune.csv", examples, fmt="%f", delimiter=',')
+    else:
+        num_train = int(args.ratio * len(examples))
+        train_dataset = examples[:num_train]
+        test_dataset = examples[num_train:]
+        np.savetxt(args.output_dir + "train.csv", train_dataset, fmt="%f", delimiter=',')
+        np.savetxt(args.output_dir +"test.csv", test_dataset, fmt="%f", delimiter=',')
     
 
 if __name__ == "__main__":
