@@ -1,4 +1,5 @@
-import pickle
+#import pickle
+import dill as pickle
 
 class Model():
     def __init__(self, net, loss_layer, optimizer):
@@ -38,14 +39,14 @@ class Model():
         self._is_training = is_training
     
     
-    def save(path, net):
+    def save(self, path):
         with open(path, "wb") as file:
-            pickle.dump(net, file, 2)
+            pickle.dump(self.net, file, -1)
         file.close()
     
     @classmethod
-    def load(path):
-        with open(path, "wb") as file:
+    def load(cls, path):
+        with open(path, "rb") as file:
             net = pickle.load(file)
         file.close()
         return net
