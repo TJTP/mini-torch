@@ -5,11 +5,11 @@ class BaseLoss():
     def loss(self, predicted, real):
         raise NotImplementedError
 
-class MeanSquareLoss(BaseLoss):
+class SquareLoss(BaseLoss):
     def loss(self, predicted, real):
         #n = predicted.shape[0]
         loss_square = ops.pow(predicted - real, 2)
-        loss_sum = 1 / 2 * loss_square.sum()
+        loss_sum = loss_square.sum()
 
         return loss_sum
 

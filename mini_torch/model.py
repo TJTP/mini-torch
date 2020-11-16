@@ -1,9 +1,9 @@
 import pickle
 
 class Model():
-    def __init__(self, net, loss, optimizer):
+    def __init__(self, net, loss_layer, optimizer):
         self.net = net 
-        self.loss = loss 
+        self.loss_layer = loss_layer 
         self.optimizer = optimizer
         
         self._is_training = True
@@ -37,16 +37,16 @@ class Model():
         self.net.set_status(is_training)
         self._is_training = is_training
     
-    @classmethod
-    def save(path, model):
+    
+    def save(path, net):
         with open(path, "wb") as file:
-            pickle.dump(model, file, 2)
+            pickle.dump(net, file, 2)
         file.close()
     
     @classmethod
     def load(path):
         with open(path, "wb") as file:
-            model = pickle.load(file)
+            net = pickle.load(file)
         file.close()
-        return model
+        return net
         
