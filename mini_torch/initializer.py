@@ -56,7 +56,7 @@ class ConstInitializer():
         self._value = value
     
     def init(self, shape):
-        return Tensor(np.full(shape, self._value), 
+        return Tensor(np.full(shape, self._value, dtype=float), 
                       requires_grad=True,
                       dtype=np.float32)
 

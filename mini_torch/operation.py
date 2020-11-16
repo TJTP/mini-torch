@@ -1,5 +1,9 @@
 import numpy as np
 
+def convert_to_tensor(obj, requires_grad=False):
+    from mini_torch.tensor import convert_to_tensor
+    return convert_to_tensor(obj, requires_grad)
+
 def create_binary_ops_tensor(values, tensor1, tensor2, grad_func_ts1, grad_func_ts2):
     requires_grad = tensor1.requires_grad or tensor2.requires_grad
     dependencies = []
@@ -51,11 +55,11 @@ def mul_(tensor1, tensor2):
     values = tensor1.values * tensor2.values
 
     def grad_func_ts1(grad):
-        grad *= tensor2.values
+        grad = grad * tensor2.values #不能写成 grad *= tensor2.values
         return avoid_broadcasting(grad, tensor1)
 
     def grad_func_ts2(grad):
-        grad *= tensor1.values
+        grad = grad * tensor1.values
         return avoid_broadcasting(grad, tensor2)
     
     return create_binary_ops_tensor(values, tensor1, tensor2, grad_func_ts1,
@@ -65,7 +69,7 @@ def div_(tensor1, tensor2):
     values = tensor1.values / tensor2.values
 
     def grad_func_ts1(grad):
-        grad /= tensor2.values
+        grad = grad / tensor2.values
         return avoid_broadcasting(grad, tensor1)
     
     def grad_func_ts2(grad):
@@ -75,15 +79,15 @@ def div_(tensor1, tensor2):
     return create_binary_ops_tensor(values, tensor1, tensor2, grad_func_ts1,
                                     grad_func_ts2)
                 
-def  pow_(tensor1, tensor2):
+def pow_(tensor1, tensor2):
     values = tensor1.values ** tensor2.values
 
     def grad_func_ts1(grad):
-        grad *= tensor2.values * tensor1.values ** (tensor2.values - 1)
+        grad = grad * tensor2.values * tensor1.values ** (tensor2.values - 1)
         return avoid_broadcasting(grad, tensor1)
     
     def grad_func_ts2(grad):
-        grad *= np.log(tensor1) * values
+        grad = grad * np.log(tensor1) * values
         return avoid_broadcasting(grad, tensor2)
 
     return create_binary_ops_tensor(values, tensor1, tensor2, grad_func_ts1,
@@ -154,7 +158,7 @@ def sum_(tensor1, axis=None):
         repeat_num = tensor1.values.shape[axis]
     
     def grad_func_ts1(grad):
-        if not axis is None:
+        if axis is not None:
             grad = np.expand_dims(grad, axis)
             grad = np.repeat(grad, repeat_num, axis)
         else:
@@ -163,7 +167,7 @@ def sum_(tensor1, axis=None):
     
     return create_unary_op_tensor(values, tensor1, grad_func_ts1)
 
-def clip_(tensor1, low, high):
+def clip_(tensor1, low=None, high=None):
     values = tensor1.values.clip(low, high)
 
     mask = np.ones(tensor1.shape, dtype=bool)
@@ -176,6 +180,16 @@ def clip_(tensor1, low, high):
         return grad * mask 
     
     return create_unary_op_tensor(values, tensor1, grad_func_ts1)
+
+# 在tensor.py 之外的文件中调用时使用的wrapper_function
+def exp(obj, requires_grad=False):
+    return exp_(convert_to_tensor(obj, requires_grad))
+
+def clip(obj, low=None, high=None, requires_grad=False):
+    return (clip_(convert_to_tensor(obj), low, high))
+
+def pow(obj1, obj2, requires_grad=False):
+    return pow_(convert_to_tensor(obj1, requires_grad), convert_to_tensor(obj2, requires_grad))
         
 #def max_(tensor1, axis=None):
 #    values = np.max(tensor1.values, axis=axis)

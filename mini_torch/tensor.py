@@ -1,9 +1,9 @@
 import numpy as np 
 import mini_torch.operation as ops 
 
-def convert_to_tensor(obj):
+def convert_to_tensor(obj, requires_grad=False):
     if not isinstance(obj, Tensor):
-        obj = Tensor(obj)
+        obj = Tensor(obj, requires_grad=requires_grad)
     return obj
 
 class Tensor():

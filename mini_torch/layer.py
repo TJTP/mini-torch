@@ -8,21 +8,21 @@ class Layer():
         self.name = name 
 
         self.params, self.grads = {}, {}
-        self.is_training = True
+        self._is_training = True
     
-    def foward(self, inputs):
+    def forward(self, inputs):
         raise NotImplementedError
 
     def set_status(self, is_training):
-        self.is_training = True if is_training == True else False
+        self._is_training = is_training
 
 class DenseLayer(Layer):
-    def __init__(self, cul_layer_num, last_layer_num=None, 
+    def __init__(self, cur_layer_num, last_layer_num=None, 
                  w_initializer=XavierInitializer(), b_initializer=ConstInitializer()):
         
         super().__init__("Fully-connected-layer")
         self.initializer = {"w": w_initializer, "b": b_initializer}
-        self.shapes = {"w": [last_layer_num, cul_layer_num], "b": [1, last_layer_num]}
+        self.shapes = {"w": [last_layer_num, cur_layer_num], "b": [1, cur_layer_num]}
         self.params = {"w":None, "b":None}
         self._is_init = False
         if last_layer_num is not None:
@@ -31,6 +31,7 @@ class DenseLayer(Layer):
         self.inputs = None             
     
     def _init_params(self, last_layer_num):
+        #print(last_layer_num)
         self.shapes["w"][0] = last_layer_num
         self.params["w"] = self.initializer["w"].init(self.shapes["w"])
         self.params["w"].zero_grad()
@@ -38,9 +39,9 @@ class DenseLayer(Layer):
         self.params["b"].zero_grad()
         self._is_init = True
     
-    def foward(self, inputs):
+    def forward(self, inputs):
         if not self._is_init:
-            self._init_params(inputs) # 等下修改
+            self._init_params(inputs.shape[1]) # 等下修改
         
         self.inputs = inputs
         return inputs @ self.params["w"] + self.params["b"]
@@ -53,7 +54,7 @@ class Activation(Layer):
     def func(self, x):
         raise NotImplementedError
 
-    def foward(self, inputs):
+    def forward(self, inputs):
         self.inputs = inputs
         return self.func(inputs)
 
@@ -62,24 +63,21 @@ class Sigmoid(Activation):
         super().__init__("Sigmoid")
     
     def func(self, x):
-        tensor_x = convert_to_tensor(x)
-        return 1.0 / (1.0 + ops.exp_(-tensor_x))
+        return 1.0 / (1.0 + ops.exp(-x, True))
 
 class Tanh(Activation):
     def __init__(self):
         super().__init__("Tanh")
 
     def func(self, x):
-        tensor_x = convert_to_tensor(x)
-        return (1.0 - ops.exp_(-tensor_x)) / 1.0 + ops.exp_(-tensor_x)
+        return (1.0 - ops.exp(-x, True)) / 1.0 + ops.exp(-x, True)
     
 class ReLU(Activation):
     def __init__(self):
         super().__init__("ReLU")
     
     def func(self, x):
-        tensor_x = convert_to_tensor(x)
-        return ops.clip_(tensor_x, low=0.0)
+        return ops.clip(x, low=0.0, requires_grad=True)
 
 
 
