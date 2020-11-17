@@ -1,15 +1,12 @@
-import numpy as np 
-import mini_torch.operation as ops 
 
-class BaseLoss():
+"""
+损失函数
+目前只实现了平方损失
+"""
+class SquareLoss():
     def loss(self, predicted, real):
-        raise NotImplementedError
+        n = predicted.shape[0]
+        loss_sum = 1/2 * ((predicted - real) * (predicted - real)).sum()
 
-class SquareLoss(BaseLoss):
-    def loss(self, predicted, real):
-        #n = predicted.shape[0]
-        loss_square = ops.pow(predicted - real, 2)
-        loss_sum = loss_square.sum()
-
-        return loss_sum
+        return loss_sum / n
 
