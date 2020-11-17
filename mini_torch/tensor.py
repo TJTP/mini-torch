@@ -22,6 +22,11 @@ class Tensor():
     @property
     def values(self):
         return self._values
+
+    @values.setter
+    def values(self, new_val):
+        self._values = np.asarray(new_val)
+        self.grad = None
     
     @property
     def shape(self):

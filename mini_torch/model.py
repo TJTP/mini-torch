@@ -33,6 +33,7 @@ class Model():
 
         for steps, params in zip(steps_each_layer, params_each_layer):
             for key in params.keys():
+                assert params[key].shape == steps[key].shape 
                 params[key] += steps[key]
         
     def zero_grad(self):

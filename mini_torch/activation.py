@@ -7,6 +7,8 @@ from mini_torch.tensor import convert_to_tensor, exp, clip
 class Activation():
     def __init__(self, name):
         self.name = name
+        self.params = {}#定义空字典, 因为在应用中将激活函数也看作
+                        #一层, 只不过没有参数
         self.inputs = None
     
     def func(self, x):
