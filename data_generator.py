@@ -15,7 +15,7 @@ def main():
                         help="Output dir.")
     parser.add_argument("--ratio", default=0.8, type=float,
                         help="Division ratio of train and test data")
-    parser.add_argument("--extra_ratio", default=0, type=float,
+    parser.add_argument("--extra_ratio", default=0.125, type=float,
                         help="Data ratio on special interval [-2, 2]. Value should in [0, 0.5]")
     args = parser.parse_args()
     
