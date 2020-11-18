@@ -15,7 +15,7 @@ def main():
                         help="Output dir.")
     parser.add_argument("--ratio", default=0.8, type=float,
                         help="Division ratio of train and test data")
-    parser.add_argument("--extra_ratio", default=0.125, type=float,
+    parser.add_argument("--extra_ratio", default=0, type=float,
                         help="Data ratio on special interval [-2, 2]. Value should in [0, 0.5]")
     args = parser.parse_args()
     
@@ -44,8 +44,8 @@ def main():
     
     if not os.path.exists(args.output_dir):
         os.makedirs(args.output_dir)    
-    np.savetxt(args.output_dir + "train.csv", train_dataset, fmt="%f", delimiter=',')
-    np.savetxt(args.output_dir +"test.csv", test_dataset, fmt="%f", delimiter=',')
+    np.savetxt(os.path.join(args.output_dir, "train.csv"), train_dataset, fmt="%f", delimiter=',')
+    np.savetxt(os.path.join(args.output_dir, "test.csv"), test_dataset, fmt="%f", delimiter=',')
     
 
 if __name__ == "__main__":
