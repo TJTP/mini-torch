@@ -29,7 +29,7 @@ class Model():
                 grads[key] = params[key].grad 
             grads_each_layer.append(grads)
         
-        steps_each_layer = self.optimizer.get_step(grads_each_layer)
+        steps_each_layer = self.optimizer.compute_steps_each_layer(grads_each_layer)
 
         for steps, params in zip(steps_each_layer, params_each_layer):
             for key in params.keys():
@@ -46,7 +46,7 @@ class Model():
     # 保存或者加载模型, 加载 (load) 是一个类方法
     def save(self, path):
         with open(path, "wb") as file:
-            pickle.dump(self.net, file, -1)
+            pickle.dump(self.net, file, 2)
         file.close()
     
     @classmethod

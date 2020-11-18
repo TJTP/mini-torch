@@ -145,8 +145,6 @@ class Tensor():
     def sum(self, axis=None):
         return sum_(self, axis=axis)
 
-    
-        
 def convert_to_tensor(obj, requires_grad=False):
     """
     将一个数或者numpy数组转化为Tensor
@@ -154,6 +152,7 @@ def convert_to_tensor(obj, requires_grad=False):
     if not isinstance(obj, Tensor):
         obj = Tensor(obj, requires_grad=requires_grad)
     return obj
+
 #==========================================================================================   
 # utils
 def create_binary_ops_tensor(values, tensor1, tensor2, grad_func_ts1, grad_func_ts2):
@@ -337,9 +336,9 @@ def getitem_(tensor1, idx):
     values = tensor1.values[idx]
 
     def grad_func_ts1(grad):
-        recover_grad = np.zeros_like(tensor1.values)
-        recover_grad[idx] = grad 
-        return recover_grad
+        grads = np.zeros_like(tensor1.values)
+        grads[idx] = grad 
+        return grads
     
     return create_unary_op_tensor(values, tensor1, grad_func_ts1)
 

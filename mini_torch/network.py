@@ -3,7 +3,7 @@
 由网络层(layer)组成的具有前向传播的功能的网络
 """
 
-class Network():
+class Network:
     def __init__(self, layers):
         self._layers = layers
     

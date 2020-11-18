@@ -5,7 +5,7 @@
 import numpy as np 
 from mini_torch.tensor import Tensor
 
-class BaseInitializer():
+class BaseInitializer:
     def init(self, shape):
         raise NotImplementedError
 

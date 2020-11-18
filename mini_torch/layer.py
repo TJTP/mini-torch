@@ -2,18 +2,15 @@
 网络层
 目前只实现了全连接层
 """
-from mini_torch.initializer import XavierInitializer, ConstInitializer
+from mini_torch.initializer import HeInitializer, ConstInitializer
 
-class DenseLayer():
+class DenseLayer:
     def __init__(self, cur_layer_num, last_layer_num=None, 
-                 w_initializer=XavierInitializer(), b_initializer=ConstInitializer(), 
-                 name=None):
+                 w_initializer=HeInitializer(), b_initializer=ConstInitializer()):
         
         self.initializer = {"w": w_initializer, "b": b_initializer}
-        self.name = name
-
-        self.shapes = {"w": [last_layer_num, cur_layer_num], "b": [1, cur_layer_num]}
         self.params = {"w":None, "b":None}
+        self.shapes = {"w": [last_layer_num, cur_layer_num], "b": [1, cur_layer_num]}
         self._is_init = False
 
         if last_layer_num is not None:
@@ -22,7 +19,7 @@ class DenseLayer():
         self.inputs = None             
     
     def _init_params(self, last_layer_num):
-        # 在训练开始后第一轮时, 才会真正初始化层的参数
+        # 通常在训练开始后第一轮时, 才会真正初始化层的参数
         self.shapes["w"][0] = last_layer_num
         self.params["w"] = self.initializer["w"].init(self.shapes["w"])
         self.params["b"] = self.initializer["b"].init(self.shapes["b"])
