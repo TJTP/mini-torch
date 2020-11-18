@@ -18,13 +18,13 @@ from mini_torch.data_loader import DataLoader
 
 from utils import draw_scatter, draw_2d
 
-def train(args, model, dataset, test_dataset=None):
+def train(args, model, dataset, dev_dataset=None):
     train_x_numpy, train_y_numpy = dataset[:, :-1], dataset[:, -1:]
     train_x, train_y = Tensor(train_x_numpy), Tensor(train_y_numpy)
 
-    if test_dataset is not None:
-        test_x_numpy, test_y_numpy = test_dataset[:, :-1], test_dataset[:, -1:]
-        test_x, test_y = Tensor(test_x_numpy), Tensor(test_y_numpy)
+    if dev_dataset is not None:
+        dev_x_numpy, dev_y_numpy = dev_dataset[:, :-1], dev_dataset[:, -1:]
+        dev_x, dev_y = Tensor(dev_x_numpy), Tensor(dev_y_numpy)
     
     if args.max_steps > 0:
         args.train_epoch_num = args.max_steps // args.train_batch_size + 1
@@ -55,15 +55,15 @@ def train(args, model, dataset, test_dataset=None):
                 print("Epoch: %d, global steps: %d, current batch loss: %f"%(epoch, global_steps, loss.values))
             if global_steps == args.max_steps:
                 break
-        if test_dataset is not None and global_steps % 5 == 0:
-            test_preds = model.forward(test_x)
+        if dev_dataset is not None and global_steps % 5 == 0:
+            dev_preds = model.forward(dev_x)
 
             plt.cla()
-            visualize(ax3, test_x_numpy, test_y_numpy, test_preds.values)
+            visualize(ax3, dev_x_numpy, dev_y_numpy, dev_preds.values)
             plt.pause(0.1)
 
-            test_loss = model.loss_layer.loss(test_preds, test_y)
-            print("****Draw on epoch-%d, test loss: %f****"%(epoch, test_loss.values))
+            dev_loss = model.loss_layer.loss(dev_preds, dev_y)
+            print("****Draw on epoch-%d, dev loss: %f****"%(epoch, dev_loss.values))
         if global_steps == args.max_steps:
             break
     plt.ioff()
@@ -104,7 +104,7 @@ def visualize(ax3, features, labels, preds):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", default="./data/", type=str,
-                        help="The data dir. Containing train ,test and fine-tune data")
+                        help="The data dir. Containing train ,test and dev data")
     parser.add_argument("--model_dir", default=None, type=str, 
                         help="The model dir. Set when fine-tuning or predicting.")
     parser.add_argument("--model_save_dir", default="./models/", type=str,
@@ -127,10 +127,11 @@ def main():
     args = parser.parse_args()
 
     train_dataset = load_data(os.path.join(args.data_dir, "train.csv"))
+    dev_dataset = load_data(os.path.join(args.data_dir, "dev.csv"))
     test_dataset = load_data(os.path.join(args.data_dir, "test.csv"))
     
-    draw_scatter(train_dataset[:, :-1], train_dataset[:,-1:])
     if args.train:
+        draw_scatter(train_dataset[:, :-1], train_dataset[:,-1:])
         if args.model_dir is not None:
             assert "Shouldn't load model when training"
         
@@ -152,7 +153,7 @@ def main():
                         ])'''
                     
         model = Model(net=net, loss_layer=SquareLoss(), optimizer=SGD(args.lr))
-        global_steps = train(args, model, train_dataset, test_dataset)
+        global_steps = train(args, model, train_dataset, dev_dataset)
         
         print("Global train steps: %d"%(global_steps))
         
@@ -165,17 +166,18 @@ def main():
             model.save(model_path)
 
     if args.predict:
+        draw_scatter(test_dataset[:, :-1], test_dataset[:, -1:])
         if args.model_dir is None and not args.train:
             assert "Set the model dir!"
         if not args.train:
             net = Model.load(args.model_dir)
             model = Model(net=net, loss_layer=SquareLoss(), optimizer=None)
         
-        preds, mean_loss = predict(args, model, train_dataset)
+        preds, mean_loss = predict(args, model, test_dataset)
         print("Mean loss: %f"%(mean_loss))
     
         if args.draw:
-            draw_scatter(train_dataset[:, :-1], preds, 'g')
+            draw_scatter(test_dataset[:, :-1], preds, 'g')
 
 if __name__ == "__main__":
     main()
