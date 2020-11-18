@@ -41,7 +41,7 @@ class XavierInitializer(BaseInitializer):
 class HeInitializer(BaseInitializer):
     """
     Kaiming He 初始化
-    当用ReLu作为激活函数时, 用此方法初始化权重
+    当用ReLU作为激活函数时, 用此方法初始化权重
     """
     def __init__(self, gamma=1.0, type="Normal"):
         self._gamma = gamma
