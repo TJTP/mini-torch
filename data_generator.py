@@ -1,3 +1,4 @@
+from matplotlib.pyplot import hlines
 import numpy as np 
 from math import sin, cos 
 import random
@@ -13,8 +14,10 @@ def main():
                         help="Num of examples")
     parser.add_argument("--output_dir", default="./data/", type=str, 
                         help="Output dir.")
+    parser.add_argument("--test", action="store_true", 
+                        help="Generate test data")
     parser.add_argument("--ratio", default=0.8, type=float,
-                        help="Division ratio of train and test data")
+                        help="Division ratio of train and dev data")
     parser.add_argument("--extra_ratio", default=0, type=float,
                         help="Data ratio on special interval [-2, 2]. Value should in [0, 0.5]")
     args = parser.parse_args()
@@ -29,9 +32,19 @@ def main():
         example.append(f(x_1, x_2))
         examples.append(example)
     random.shuffle(examples)
+
+    if not os.path.exists(args.output_dir):
+        os.makedirs(args.output_dir)
+    if args.test:
+        # 生成测试数据
+        np.savetxt(os.path.join(args.output_dir, "test.csv"), examples, fmt="%f", delimiter=',')
+        return
+    # 切分训练集和验证集
     num_train = int(args.ratio * len(examples))
     train_dataset = examples[:num_train]
-    test_dataset = examples[num_train:]
+    dev_dataset = examples[num_train:]
+
+    # 生成特定区间上的训练数据
     assert 0 <= args.extra_ratio <= 0.5
     for _ in range(int(args.extra_ratio * num_train)):
         example = []
@@ -42,10 +55,8 @@ def main():
         example.append(f(x_1, x_2))
         train_dataset.append(example)
     
-    if not os.path.exists(args.output_dir):
-        os.makedirs(args.output_dir)    
     np.savetxt(os.path.join(args.output_dir, "train.csv"), train_dataset, fmt="%f", delimiter=',')
-    np.savetxt(os.path.join(args.output_dir, "test.csv"), test_dataset, fmt="%f", delimiter=',')
+    np.savetxt(os.path.join(args.output_dir, "dev.csv"), dev_dataset, fmt="%f", delimiter=',')
     
 
 if __name__ == "__main__":
