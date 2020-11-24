@@ -305,7 +305,7 @@ def transpose_(tensor1, axes=None):
 def sum_(tensor1, axis=None):
     values = tensor1.values.sum(axis=axis)
     
-    if not axis is None:
+    if axis is not None:
         repeat_num = tensor1.values.shape[axis]
     
     def grad_func_ts1(grad):
