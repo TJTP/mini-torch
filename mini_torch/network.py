@@ -13,4 +13,4 @@ class Network:
         return inputs
     
     def get_net_params(self):
-        return [layer.params for layer in self._layers]
+        return [layer.params for layer in self._layers if layer.params]
