@@ -5,6 +5,7 @@ import random
 import datetime
 import matplotlib.pyplot as plt 
 from mpl_toolkits.mplot3d import Axes3D 
+from math import ceil
 
 from mini_torch.tensor import Tensor
 from mini_torch.layer import DenseLayer
@@ -19,15 +20,14 @@ from mini_torch.data_loader import DataLoader
 from utils import draw_scatter, draw_2d
 
 def train(args, model, dataset, dev_dataset=None):
-    train_x_numpy, train_y_numpy = dataset[:, :-1], dataset[:, -1:]
-    train_x, train_y = Tensor(train_x_numpy), Tensor(train_y_numpy)
+    train_x, train_y = Tensor(dataset[:, :-1]), Tensor(dataset[:, -1:])
 
     if dev_dataset is not None:
         dev_x_numpy, dev_y_numpy = dev_dataset[:, :-1], dev_dataset[:, -1:]
         dev_x, dev_y = Tensor(dev_x_numpy), Tensor(dev_y_numpy)
     
     if args.max_steps > 0:
-        args.train_epoch_num = args.max_steps // args.train_batch_size + 1
+        args.train_epoch_num = ceil(args.max_steps / args.train_batch_size)
 
     dataloader = DataLoader(train_x, train_y, args.train_batch_size)
     
