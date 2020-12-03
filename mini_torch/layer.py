@@ -35,9 +35,3 @@ class DenseLayer:
         
         self.inputs = inputs
         return inputs @ self.params["w"] + self.params["b"]
-
-
-
-
-
-
