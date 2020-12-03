@@ -17,10 +17,10 @@ from mini_torch.loss import SquareLoss
 from mini_torch.optimizer import SGD
 from mini_torch.data_loader import DataLoader
 
-from utils import draw_scatter, draw_2d
+from utils import draw_scatter, load_data
 
-def train(args, model, dataset, dev_dataset=None):
-    train_x, train_y = Tensor(dataset[:, :-1]), Tensor(dataset[:, -1:])
+def train(args, model, features, labels, dev_dataset=None):
+    train_x, train_y = Tensor(features), Tensor(labels)
 
     if dev_dataset is not None:
         dev_x_numpy, dev_y_numpy = dev_dataset[:, :-1], dev_dataset[:, -1:]
@@ -32,7 +32,7 @@ def train(args, model, dataset, dev_dataset=None):
     dataloader = DataLoader(train_x, train_y, args.train_batch_size)
     
     print("*********** Train ***********")
-    print("\tExamples num: %d"%(len(dataset)))
+    print("\tExamples num: %d"%(dataloader.len))
     print("\tEpoch num: %d"%(args.train_epoch_num))
     print("\tBatch size: %d"%(args.train_batch_size))
     print("\tBatch num: %d"%(dataloader.len))
@@ -44,15 +44,17 @@ def train(args, model, dataset, dev_dataset=None):
 
     global_steps = 0
     for epoch in range(args.train_epoch_num):
+        epoch_loss = 0
         for batch in dataloader():
             model.zero_grad()
             preds = model.forward(batch.inputs)
             loss = model.loss_layer.loss(preds, batch.labels)
+            epoch_loss += loss.values
+
             loss.backward()
             model.step()
             global_steps += 1
-            if global_steps % dataloader.len == 0:
-                print("Epoch: %d, global steps: %d, current batch loss: %f"%(epoch, global_steps, loss.values))
+
             if global_steps == args.max_steps:
                 break
         if dev_dataset is not None and global_steps % 5 == 0:
@@ -64,35 +66,40 @@ def train(args, model, dataset, dev_dataset=None):
 
             dev_loss = model.loss_layer.loss(dev_preds, dev_y)
             print("****Draw on epoch-%d, dev loss: %f****"%(epoch, dev_loss.values))
+        
+        print("Epoch: %d, global steps: %d, epoch loss: %f"%(epoch, global_steps, epoch_loss))
         if global_steps == args.max_steps:
             break
     plt.ioff()
     return global_steps
         
-def predict(args, model, test_dataset):
+def predict(args, model, features, labels=None):
+    test_x, test_y = Tensor(features), None 
+    if labels is not None:
+        test_y = Tensor(labels)
+    dataloader = DataLoader(test_x, test_y, args.predict_batch_size, shuffle=False)
+
     print("*********** Predict ***********")
-    print("\tExamples num: %d"%(len(test_dataset)))
+    print("\tExamples num: %d"%(dataloader.data_num))
     print("\tBatch size: %d"%(args.predict_batch_size))
 
-    test_x, test_y = Tensor(test_dataset[:, :-1]), Tensor(test_dataset[:, -1:])
-    dataloader = DataLoader(test_x, test_y, args.predict_batch_size, shuffle=False)
     preds = None
-    tot_loss = 0.0
+    tot_loss = 0.0 if labels is not None else  -100.0 * dataloader.data_num
 
     for batch in dataloader():        
         test_preds = model.forward(batch.inputs)
-        test_loss = model.loss_layer.loss(test_preds, batch.labels)
-        tot_loss += test_loss.values * batch.len
+        if labels is not None:
+            test_loss = model.loss_layer.loss(test_preds, batch.labels)
+            tot_loss += test_loss.values * batch.len
         
         if preds is None:
             preds = test_preds.values
         else:
             preds = np.concatenate((preds, test_preds.values), axis=0)
+    
     return preds, tot_loss / dataloader.data_num
 
-def load_data(path):
-    data = np.loadtxt(path, dtype=float, delimiter=",")
-    return data
+
 
 def visualize(ax3, features, labels, preds):
     X1 = features[:, :-1]
@@ -129,9 +136,11 @@ def main():
     train_dataset = load_data(os.path.join(args.data_dir, "train.csv"))
     dev_dataset = load_data(os.path.join(args.data_dir, "dev.csv"))
     test_dataset = load_data(os.path.join(args.data_dir, "test.csv"))
+    train_features, train_labels = train_dataset[:, :-1], train_dataset[:, -1:]
+    test_features, test_labels = test_dataset[:, :-1], test_dataset[:, -1:]
     
     if args.train:
-        draw_scatter(train_dataset[:, :-1], train_dataset[:,-1:])
+        # draw_scatter(train_features, train_labels)
         if args.model_dir is not None:
             assert "Shouldn't load model when training"
         
@@ -153,7 +162,7 @@ def main():
                         ])'''
                     
         model = Model(net=net, loss_layer=SquareLoss(), optimizer=SGD(args.lr))
-        global_steps = train(args, model, train_dataset, dev_dataset)
+        global_steps = train(args, model, train_features, train_labels, dev_dataset)
         
         print("Global train steps: %d"%(global_steps))
         
@@ -173,11 +182,11 @@ def main():
             net = Model.load(args.model_dir)
             model = Model(net=net, loss_layer=SquareLoss(), optimizer=None)
         
-        preds, mean_loss = predict(args, model, test_dataset)
+        preds, mean_loss = predict(args, model, test_features, test_labels)
         print("Mean loss: %f"%(mean_loss))
     
         if args.draw:
-            draw_scatter(test_dataset[:, :-1], preds, 'g')
+            draw_scatter(test_features, preds, 'g')
 
 if __name__ == "__main__":
     main()
