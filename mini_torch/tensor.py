@@ -1,6 +1,7 @@
 """
 Tensor类及其重载的操作
 """
+from math import fabs
 import numpy as np 
 
 class DependencyNode():
@@ -142,8 +143,8 @@ class Tensor():
     def log(self):
         return log_(self)
     
-    def sum(self, axis=None):
-        return sum_(self, axis=axis)
+    def sum(self, axis=None, keepdims=False):
+        return sum_(self, axis=axis, keepdims=keepdims)
 
 def convert_to_tensor(obj, requires_grad=False):
     """
@@ -302,15 +303,16 @@ def transpose_(tensor1, axes=None):
 
     return create_unary_op_tensor(values, tensor1, grad_func_ts1)
 
-def sum_(tensor1, axis=None):
-    values = tensor1.values.sum(axis=axis)
+def sum_(tensor1, axis=None, keepdims=False):
+    values = tensor1.values.sum(axis=axis, keepdims=keepdims)
     
     if axis is not None:
         repeat_num = tensor1.values.shape[axis]
     
     def grad_func_ts1(grad):
         if axis is not None:
-            grad = np.expand_dims(grad, axis)
+            if not keepdims:
+                grad = np.expand_dims(grad, axis)
             grad = np.repeat(grad, repeat_num, axis)
         else:
             grad = grad * np.ones_like(tensor1.values)
@@ -352,3 +354,6 @@ def clip(obj, low=None, high=None, requires_grad=False):
 
 def pow(obj1, obj2, requires_grad=False):
     return pow_(convert_to_tensor(obj1, requires_grad), convert_to_tensor(obj2, requires_grad))
+
+def log(obj1, requires_grad=False):
+    return log_(convert_to_tensor(obj1, requires_grad))
