@@ -55,4 +55,6 @@ class Model():
             net = pickle.load(file)
         file.close()
         return net
-        
+    
+    def get_layer_params(self):
+        return self.net.get_net_params()
