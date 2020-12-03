@@ -31,7 +31,7 @@ class XavierInitializer(BaseInitializer):
             #按均匀分布随机初始化
             last_layer_num, cur_layer_num = shape[0], shape[1]
             a = self._gamma * np.sqrt(6.0 / (last_layer_num + cur_layer_num))
-            return Tensor(np.random.uniform(low=-a, high=a, size = shape),
+            return Tensor(np.random.uniform(low=-a, high=a, size=shape),
                           requires_grad=True,
                           dtype=np.float32)
 
@@ -58,7 +58,7 @@ class HeInitializer(BaseInitializer):
         elif type == "Uniform":
             last_layer_num = shape[0]
             a = self._gamma * np.sqrt(6.0 / last_layer_num)
-            return Tensor(np.random.uniform(low=-a, high=a, size = shape),
+            return Tensor(np.random.uniform(low=-a, high=a, size=shape),
                           requires_grad=True,
                           dtype=np.float32)
 

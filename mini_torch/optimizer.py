@@ -4,6 +4,7 @@
 """
 class SGD:
     def __init__(self, learning_rate, weight_decay=0.0):
+        self.name = "SGD"
         self.lr = learning_rate
         self.weight_decay = weight_decay
     

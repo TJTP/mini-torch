@@ -7,21 +7,21 @@ import dill as pickle
 
 class Model():
     def __init__(self, net, loss_layer, optimizer):
-        self.net = net 
+        self._net = net 
         self.loss_layer = loss_layer 
-        self.optimizer = optimizer
+        self._optimizer = optimizer
     
     def forward(self, inputs):
         """
         前向传播
         """
-        return self.net.forward(inputs)
+        return self._net.forward(inputs)
     
     def step(self):
         """
         更新网络参数
         """
-        params_each_layer = self.net.get_net_params()
+        params_each_layer = self._net.get_net_params()
         grads_each_layer = []
         for params in params_each_layer:
             grads = {}
@@ -29,7 +29,7 @@ class Model():
                 grads[key] = params[key].grad 
             grads_each_layer.append(grads)
         
-        steps_each_layer = self.optimizer.compute_steps_each_layer(grads_each_layer)
+        steps_each_layer = self._optimizer.compute_steps_each_layer(grads_each_layer)
 
         for steps, params in zip(steps_each_layer, params_each_layer):
             for key in params.keys():
@@ -37,7 +37,7 @@ class Model():
                 params[key] += steps[key]
         
     def zero_grad(self):
-        params_each_layer = self.net.get_net_params()
+        params_each_layer = self._net.get_net_params()
         for params in params_each_layer:
             for values in params.values():
                 if values is not None:
@@ -46,7 +46,7 @@ class Model():
     # 保存或者加载模型, 加载 (load) 是一个类方法
     def save(self, path):
         with open(path, "wb") as file:
-            pickle.dump(self.net, file, 2)
+            pickle.dump(self._net, file, 2)
         file.close()
     
     @classmethod
@@ -57,4 +57,27 @@ class Model():
         return net
     
     def get_layer_params(self):
-        return self.net.get_net_params()
+        return self._net.get_net_params()
+
+    def _print_structure(self):
+        layerCnt = 0
+        print("[Input--->]")
+        for layer in self._net.layers:
+            if (layer.name[-3:] == "act"):
+                print(layer.name+'-'+str(layerCnt), end='\n')
+            else:
+                print(layer.name+'('+str(layer.shape[1])+')'+'-'+str(layerCnt), end='  ')
+            layerCnt += 1
+        print("\n[Output--->]")
+    
+    def set_show(self, layer_idxs):
+        for layer_idx in layer_idxs:
+            self._net.set_show(layer_idx)
+    
+    def print_model(self):
+        print("========Model structure========")
+        self._print_structure()
+        print("Loss function: %s"%(self.loss_layer.name))
+        if self._optimizer is not None:
+            print("Optimizer: %s"%(self._optimizer.name))
+        print("===============================")

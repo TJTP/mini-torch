@@ -5,12 +5,15 @@
 
 class Network:
     def __init__(self, layers):
-        self._layers = layers
+        self.layers = layers
     
     def forward(self, inputs):
-        for layer in self._layers:
+        for layer in self.layers:
             inputs = layer.forward(inputs)
         return inputs
     
     def get_net_params(self):
-        return [layer.params for layer in self._layers if layer.params]
+        return [layer.params for layer in self.layers]
+    
+    def set_show(self, layer_idx):
+        self.layers[layer_idx].show = True
