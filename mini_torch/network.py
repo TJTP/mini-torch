@@ -17,3 +17,12 @@ class Network:
     
     def set_show(self, layer_idx):
         self.layers[layer_idx].show = True
+    
+    def record_layer_values(self, layer_idx):
+        self.layers[layer_idx].record_values = True
+    
+    def get_layer_values(self, layer_idx):
+        return self.layers[layer_idx].layer_values
+    
+    def clean_layer_values(self, layer_idx):
+        self.layers[layer_idx].layer_values = []

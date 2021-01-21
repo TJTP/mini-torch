@@ -6,7 +6,8 @@ from mini_torch.initializer import HeInitializer, ConstInitializer
 
 class DenseLayer:
     def __init__(self, cur_layer_num, last_layer_num=None, 
-                 w_initializer=HeInitializer(), b_initializer=ConstInitializer(), show=False):
+                 w_initializer=HeInitializer(), b_initializer=ConstInitializer(), 
+                 show=False, record_values=False):
         
         self.name = "Dense Layer"
         self._initializer = {"w": w_initializer, "b": b_initializer}
@@ -20,7 +21,9 @@ class DenseLayer:
             self._init_params(last_layer_num)
 
         self._inputs = None
-        self.show = show             
+        self.show = show
+        self.record_values = record_values
+        self.layer_values = []             
     
     def _init_params(self, last_layer_num):
         # 通常在训练开始后第一轮时, 才会真正初始化层的参数
@@ -44,4 +47,8 @@ class DenseLayer:
         if self.show:
             print('<'+self.name+'>')
             print(output.values)
+        
+        if self.record_values:
+            self.layer_values.extend(output.values)
+
         return output

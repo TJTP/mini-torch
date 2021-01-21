@@ -5,11 +5,13 @@
 from mini_torch.tensor import convert_to_tensor, exp, clip
 
 class BaseActivation:
-    def __init__(self, name, show=False):
+    def __init__(self, name, show=False, record_values=False):
         self.params = {}#定义空字典, 因为在应用中将激活函数也看作
                         #一层, 只不过没有参数
         self._inputs = None
         self.show = show
+        self.record_values = record_values
+        self.layer_values = []
         self.name = name + "-act"
     
     def func(self, x):
@@ -21,6 +23,8 @@ class BaseActivation:
         if self.show:
             print('<'+self.name+'>')
             print(output.values)
+        if self.record_values:
+            self.layer_values.extend(output.values)
         return output
 
 class Sigmoid(BaseActivation):

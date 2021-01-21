@@ -73,6 +73,17 @@ class Model():
     def set_show(self, layer_idxs):
         for layer_idx in layer_idxs:
             self._net.set_show(layer_idx)
+        
+    def record_layer_values(self, layer_idxs):
+        for layer_idx in layer_idxs:
+            self._net.record_layer_values(layer_idx)
+    
+    def get_layer_values(self, layer_idx):
+        return self._net.get_layer_values(layer_idx)
+    
+    def clean_layer_values(self, layer_idxs):
+        for layer_idx in layer_idxs:
+            self._net.clean_layer_values(layer_idx)
     
     def print_model(self):
         print("========Model structure========")
